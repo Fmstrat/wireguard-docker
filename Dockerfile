@@ -1,15 +1,12 @@
-FROM debian:buster
+FROM ubuntu:bionic
 
-# Add debian unstable repo for wireguard packages
-RUN echo "deb http://deb.debian.org/debian/ unstable main" > /etc/apt/sources.list.d/unstable-wireguard.list && \
- printf 'Package: *\nPin: release a=unstable\nPin-Priority: 90\n' > /etc/apt/preferences.d/limit-unstable
-
-# Install wireguard packges
-RUN apt update && \
- apt install -y --no-install-recommends wireguard-tools iptables nano net-tools procps && \
- echo "resolvconf resolvconf/linkify-resolvconf boolean false" | debconf-set-selections && \
- apt install -y resolvconf && \
- apt clean
+# Install wireguard packages
+RUN apt-get update -y && \
+    apt-get install -y software-properties-common iptables curl iproute2 ifupdown iputils-ping && \
+    echo resolvconf resolvconf/linkify-resolvconf boolean false | debconf-set-selections && \
+    echo "REPORT_ABSENT_SYMLINK=no" >> /etc/default/resolvconf && \
+    add-apt-repository --yes ppa:wireguard/wireguard && \
+    apt-get install -y resolvconf wireguard
 
 # Add main work dir to PATH
 WORKDIR /scripts
